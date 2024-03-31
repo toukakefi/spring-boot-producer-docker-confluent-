@@ -2,69 +2,44 @@ package com.example.producer.service;
 
 import com.example.producer.entity.Enseignant;
 import com.example.producer.repository.EnseignantRepo;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Optional;
 
 @Service
 public class EnseignantCommandService {
 
     @Autowired
-    private EnseignantRepo repo;
+    private EnseignantRepo enseignantRepo;
 
     @Autowired
-    private KafkaTemplate<String, EnsEvent> kafkaTemplate;
+    private KafkaTemplate<String, Enseignant> kafkaTemplate;
 
-    @Transactional
-    public Enseignant createEns(EnsEvent ens) {
+    @Value("${topic.enseignant-event}")
+    private String enseignantEventTopic;
+
+    public Optional<Enseignant> getEnseignantById(Long id) {
+        return enseignantRepo.findById(id);
+    }
+
+    public Enseignant saveEnseignant(Enseignant enseignant) {
+        Enseignant savedEnseignant = enseignantRepo.save(enseignant);
+
+        // Envoi de l'événement à Kafka via Confluent Control Center
         try {
-            Enseignant enseignant = ens.getEnseignant();
-            Enseignant savedEnseignant = repo.save(enseignant);
-            publishCreateEvent(savedEnseignant);
-            System.out.println("EnsEvent sent successfully to Kafka topic.");
-            return savedEnseignant;
+            kafkaTemplate.send(enseignantEventTopic, savedEnseignant);
         } catch (Exception e) {
-            // Handle the exception, log it, and optionally rethrow it if needed
-            // You may also consider throwing a more specific exception type based on your requirements
-            throw new RuntimeException("Error occurred while creating Enseignant", e);
+            // Gérer l'exception
+            e.printStackTrace(); // ou enregistrez le message d'erreur dans les journaux
+            // Vous pouvez également lancer une nouvelle exception ou effectuer une autre action en cas d'erreur
         }
+
+        return savedEnseignant;
     }
 
-    public Enseignant updateEns(Long id, EnsEvent ens) {
-        Enseignant existEns = repo.findById(id).orElse(null);
-        if (existEns != null) {
-            Enseignant newEns = ens.getEnseignant();
-            existEns.setFirstname(newEns.getFirstname());
-            existEns.setLastname(newEns.getLastname());
-            existEns.setAge(newEns.getAge());
-            Enseignant updatedEns = repo.save(existEns);
-            publishUpdateEvent(updatedEns);
-            return updatedEns;
-        } else {
-            // Handle the case where the entity with the given ID is not found.
-            return null;
-        }
+    public void deleteEnseignant(Long id) {
+        enseignantRepo.deleteById(id);
     }
-
-//    public void delete(Long id) {
-//        repo.deleteById(id);
-//        publishDeleteEvent(id);
-//    }
-
-    private void publishCreateEvent(Enseignant enseignant) {
-        EnsEvent event = new EnsEvent("createEnseignant", enseignant);
-        kafkaTemplate.send("enseignant-event-topic", event);
-    }
-
-    private void publishUpdateEvent(Enseignant enseignant) {
-        EnsEvent event = new EnsEvent("updateEnseignant", enseignant);
-        kafkaTemplate.send("enseignant-event-topic", event);
-    }
-
-//    private void publishDeleteEvent(Long id) {
-//        String deleteEventMessage = "deleteEnseignant:" + id;
-//        kafkaTemplate.send("enseignant-event-topic", deleteEventMessage);
-//    }
 }

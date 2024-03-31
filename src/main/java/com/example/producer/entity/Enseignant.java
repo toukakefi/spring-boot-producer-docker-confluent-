@@ -8,24 +8,23 @@ import lombok.*;
 
 
 
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name="Enseignant_command")
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Enseignant {
+
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "prenom")  // Specify the custom column name for firstname
-    private String firstname;
+    @Column(name = "nom")
+    private String nom;
 
-    @Column(name = "nom")     // Specify the custom column name for lastname
-    private String lastname;
+    @Column(name = "prenom")
+    private String prenom;
 
-    @Column(name = "age_personnel")  // Specify the custom column name for age
-    private Integer age;
+    @Column(name = "email")
+    private String email;
 }
