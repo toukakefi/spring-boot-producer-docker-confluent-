@@ -19,11 +19,7 @@ public class EnseignantCommandController {
 
 
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Enseignant> getEnseignantById(@PathVariable Long id) {
-        Optional<Enseignant> enseignant = enseignantCommandService.getEnseignantById(id);
-        return enseignant.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
+
 
     @PostMapping
     public ResponseEntity<Enseignant> createEnseignant(@RequestBody Enseignant enseignant) {
@@ -31,15 +27,7 @@ public class EnseignantCommandController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEnseignant);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Enseignant> updateEnseignant(@PathVariable Long id, @RequestBody Enseignant enseignant) {
-        if (!enseignantCommandService.getEnseignantById(id).isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-        enseignant.setId(id);
-        Enseignant updatedEnseignant = enseignantCommandService.saveEnseignant(enseignant);
-        return ResponseEntity.ok(updatedEnseignant);
-    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEnseignant(@PathVariable Long id) {

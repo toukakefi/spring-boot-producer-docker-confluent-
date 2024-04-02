@@ -39,6 +39,15 @@ public class EnseignantCommandService {
     }
 
     public void deleteEnseignant(Long id) {
-        enseignantRepo.deleteById(id);
+        Optional<Enseignant> optionalEnseignant = enseignantRepo.findById(id);
+        if (optionalEnseignant.isPresent()) {
+            enseignantRepo.deleteById(id);
+            try {
+                kafkaTemplate.send(enseignantEventTopic, optionalEnseignant.get());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
+
 }
