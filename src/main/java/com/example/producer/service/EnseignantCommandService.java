@@ -31,9 +31,8 @@ public class EnseignantCommandService {
         try {
             kafkaTemplate.send(enseignantEventTopic, savedEnseignant);
         } catch (Exception e) {
-            // Gérer l'exception
-            e.printStackTrace(); // ou enregistrez le message d'erreur dans les journaux
-            // Vous pouvez également lancer une nouvelle exception ou effectuer une autre action en cas d'erreur
+
+            e.printStackTrace();
         }
 
         return savedEnseignant;

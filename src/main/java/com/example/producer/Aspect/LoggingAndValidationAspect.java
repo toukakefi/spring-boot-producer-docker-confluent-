@@ -35,7 +35,7 @@ public class LoggingAndValidationAspect {
         Object[] args = joinPoint.getArgs();
         for (Object arg : args) {
             Assert.notNull(arg, "Les données ne peuvent pas être nulles");
-            // Vous pouvez ajouter d'autres validations selon vos besoins
+
         }
     }
 }
